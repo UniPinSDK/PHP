@@ -14,8 +14,8 @@
     ],
     "minimum-stability": "stable",
     "autoload": {
-        "psr-0": {
-            "UniPin": "src/"
-        }
+        "files": [
+            "src/Driver.php"
+        ]
     }
 }
