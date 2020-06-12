@@ -1,0 +1,21 @@
+{
+    "name": "unipinsdk/php",
+    "description": "UniPin SDK for PHP language",
+    "type": "library",
+    "require": {
+        "php": ">=7.0"
+    },
+    "license": "unlicensed",
+    "authors": [
+        {
+            "name": "Naveed",
+            "email": "sh.naveed@unipin.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": {
+            "UniPin": "src/"
+        }
+    }
+}
