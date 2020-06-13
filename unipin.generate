@@ -21,7 +21,6 @@ if(isset($argv)){
         $_API_URL = "https://" . $_API_PREFIX . ".unipin.com/";
 
         $_FILENAME = "/vendor/unipinsdk/php/partner.unipin";
-        $_FILENAME = "partner.unipin";
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
