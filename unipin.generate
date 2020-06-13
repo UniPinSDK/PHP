@@ -20,7 +20,15 @@ if(isset($argv)){
         }
         $_API_URL = "https://" . $_API_PREFIX . ".unipin.com/";
 
+        $_API_UNIBOX_URL = "https://dev.unipin.com/api/unibox/";
+        if($argv[1] == "production"){
+            $_API_UNIBOX_URL = "https://services.unipin.com/api/";
+        }
+
+        $_IMAGES_URL = "https://cdn.unipin.com/images/";
+
         $_FILENAME = "./vendor/unipinsdk/php/unipin.merchant";
+        $_FILENAME = "./unipin.merchant";
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
@@ -30,7 +38,9 @@ if(isset($argv)){
 
         $_PARTNER_DATA = [
             "ENV" => $argv[1],
-            "URL" => $_API_URL,
+            "API_URL" => $_API_URL,
+            "API_UNIBOX_URL" => $_API_UNIBOX_URL,
+            "IMAGES_URL" => $_IMAGES_URL,
             "GUID" => $argv[2],
             "SECRET" => $argv[3]
         ];
