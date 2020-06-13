@@ -74,7 +74,7 @@ function ERROR($_CODE){
             echo GET_MESSAGE("DES ECB Encryption not supported\n", "ERROR");
             break;
         case 3:
-            echo GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n", "ERROR");
+            echo GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n\n", "ERROR");
             break;
         default:
             echo GET_MESSAGE("UNKNOWN ERROR", "ERROR");
