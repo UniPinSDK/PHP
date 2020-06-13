@@ -28,6 +28,7 @@ if(isset($argv)){
         $_IMAGES_URL = "https://cdn.unipin.com/images/";
 
         $_FILENAME = "./vendor/unipinsdk/php/unipin.merchant";
+        $_FILENAME = "./unipin.merchant";
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
