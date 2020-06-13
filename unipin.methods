@@ -82,7 +82,7 @@ if(isset($argv)){
             ERROR(1);
         }
 
-        $_EXAMPLE_TEXT = GET_MESSAGE("\nAllowed Methods:\n\n", "HEADING");
+        $_EXAMPLE_TEXT = GET_MESSAGE("Allowed Methods:", "HEADING");
 
         $_VAR_1 = strtolower($argv[1]);
         $_VAR_2 = strtolower($argv[2]);
@@ -111,7 +111,7 @@ if(isset($argv)){
 }
 
 function ERROR($_CODE){
-    echo GET_MESSAGE("\n\n  ERROR ($_CODE):  \n", "WARNING");
+    echo GET_MESSAGE("ERROR ($_CODE)", "WARNING");
     switch($_CODE){
         case 1:
             echo GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
@@ -132,36 +132,6 @@ function ERROR($_CODE){
     exit();
 }
 
-function HANDLE_FILEEXISTS(){
-    echo GET_MESSAGE("\nPartner credentials already exists. Do you want to generate again?\n", "QUESTION");
-    echo GET_MESSAGE("[yes/no]");
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    if(trim($line) != 'yes'){
-        echo GET_MESSAGE("\nABORTING!\n", "WARNING");
-        exit;
-    }
-    else {
-        echo GET_MESSAGE("\nGenerating..\n", "SUCCESS");
-    }
-    fclose($handle);
-}
-
-function HANDLE_CONFIRM_ENV(){
-    echo GET_MESSAGE("\nAre you sure to generate PRODUCTION credentials?\n", "QUESTION");
-    echo GET_MESSAGE("[yes/no]");
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    if(trim($line) != 'yes'){
-        echo GET_MESSAGE("\nABORTING!\n", "WARNING");
-        exit;
-    }
-    else {
-        echo GET_MESSAGE("\nConfirmed Production!\n", "SUCCESS");
-    }
-    fclose($handle);
-}
-
 function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
     switch($_TYPE){
         case "QUESTION":
@@ -170,20 +140,14 @@ function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
         case "NOTICE":
             $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
             break;
-        case "NOTE":
-            $_MESSAGE = "\033[1;34m" . $_MESSAGE . "\033[0m";
-            break;
         case "SUCCESS":
             $_MESSAGE = "\033[1;32m" . $_MESSAGE . "\033[0m";
             break;
         case "HEADING":
-            $_MESSAGE = "\033[4m" . $_MESSAGE . "\033[0m";
-            break;
-        case "SUCCESS_NOTE":
-            $_MESSAGE = "\033[42m" . $_MESSAGE . "\033[0m";
+            $_MESSAGE = "\n\033[4m" . $_MESSAGE . "\033[0m\n\n";
             break;
         case "WARNING":
-            $_MESSAGE = "\033[41m" . $_MESSAGE . "\033[0m";
+            $_MESSAGE = "\n\033[41m   " . $_MESSAGE . "   \033[0m\n";
             break;
         case "ERROR":
             $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
@@ -193,46 +157,6 @@ function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
             break;
     }
     return $_MESSAGE;
-}
-
-function GET_SAMPLES_FLASH(){
-    $_TEXT = "";
-
-    $_TEXT .= GET_MESSAGE("Flash (in-game topup):\n", "QUESTION");
-
-    $_TEXT .= GET_MESSAGE("\n   \$_GameTopUp = UniPin\Games::GameTopUp( \$_GameCode, \$_TransactionID, \$_GameDenominationIdSelected, \$_UserFields)\n", "SUCCESS");
-    $_TEXT .= GET_MESSAGE("      GameTopUp is complete method including UserValidate and OrderCreate (all-in-one process).\n", "NORMAL");
-
-    $_TEXT .= GET_MESSAGE("\n   \$_Game = UniPin\Games::GetDetail(\$_GameCode, \$_GameCode_description);\n", "SUCCESS");
-    $_TEXT .= GET_MESSAGE("      GetDetail method can be use to get detail of one game calling with \$_GameCode.\n", "NORMAL");
-
-    $_TEXT .= "\n";
-
-    return $_TEXT;
-}
-
-function GET_SAMPLES_VOUCHERS(){
-    $_TEXT = "";
-
-    $_TEXT .= GET_MESSAGE("Vouchers:\n", "QUESTION");
-
-    $_TEXT .= GET_MESSAGE("Flash (in-game topup):\n", "SUCCESS");
-
-    $_TEXT .= "\n";
-
-    return $_TEXT;
-}
-
-function GET_SAMPLES_UNIBOX(){
-    $_TEXT = "";
-
-    $_TEXT .= GET_MESSAGE("Unibox:\n", "QUESTION");
-
-    $_TEXT .= GET_MESSAGE("Flash (in-game topup):\n", "SUCCESS");
-
-    $_TEXT .= "\n";
-
-    return $_TEXT;
 }
 
 function GET_SAMPLES($_API_NAME){
