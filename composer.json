@@ -12,7 +12,7 @@
             "email": "sh.naveed@unipin.com"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "autoload": {
         "files": [
             "src/Driver.php"
