@@ -45,12 +45,12 @@ if(isset($argv)){
             ERROR(2);
         }
 
-        if(file_exists($_FILENAME)){
+        try{
             file_put_contents($_FILENAME, $_PARTNER_DATA);
             echo GET_MESSAGE("\n\n  SUCCESS:  \n", "SUCCESS_NOTE");
             echo GET_MESSAGE("Partner credentials generated\n", "SUCCESS");
         }
-        else {
+        catch(Exception $ex) {
             ERROR(3);
         }
     }
