@@ -1,0 +1,141 @@
+<?php
+if(isset($argv)){
+    if(isset($argv[1]) && isset($argv[2]) && isset($argv[3])){
+
+        $argv[1] = strtolower($argv[1]);
+        if($argv[1] == "" || $argv[2] == "" || $argv[3] == ""){
+            ERROR(1);
+        }
+
+        if($argv[1] != "staging" && $argv[1] != "production"){
+            ERROR(1);
+        }
+        elseif($argv[1] == "production") {
+            HANDLE_CONFIRM_ENV();
+        }
+
+        $_API_PREFIX = "dev-api";
+        if($argv[1] == "production"){
+            $_API_PREFIX = "api";
+        }
+        $_API_URL = "https://" . $_API_PREFIX . ".unipin.com/";
+
+        $_FILENAME = "/vendor/unipinsdk/php/partner.unipin";
+        if(file_exists($_FILENAME)){
+            $_FILE = file_get_contents($_FILENAME);
+            if(trim($_FILE) != ""){
+                HANDLE_FILEEXISTS();
+            }
+        }
+
+        $_PARTNER_DATA = [
+            "ENV" => $argv[1],
+            "URL" => $_API_URL,
+            "GUID" => $argv[2],
+            "SECRET" => $argv[3]
+        ];
+        $_PARTNER_DATA = json_encode($_PARTNER_DATA);
+
+        $_CIPHER = "des-ecb";
+        if (in_array($_CIPHER, openssl_get_cipher_methods()))
+        {
+            $_PARTNER_DATA = openssl_encrypt($_PARTNER_DATA, $_CIPHER, $argv[3]);
+        }
+        else {
+            ERROR(2);
+        }
+
+        if(file_exists($_FILENAME)){
+            file_put_contents($_FILENAME, $_PARTNER_DATA);
+            echo GET_MESSAGE("\n\n  SUCCESS:  \n", "SUCCESS_NOTE");
+            echo GET_MESSAGE("Partner credentials generated\n", "SUCCESS");
+        }
+        else {
+            ERROR(3);
+        }
+    }
+    else {
+        ERROR(1);
+    }
+}
+
+function ERROR($_CODE){
+    echo GET_MESSAGE("\n\n  ERROR ($_CODE):  \n", "WARNING");
+    switch($_CODE){
+        case 1:
+            echo GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
+            echo GET_MESSAGE("1. Environment (staging or production)\n", "NOTICE");
+            echo GET_MESSAGE("2. Partner GUID\n", "NOTICE");
+            echo GET_MESSAGE("3. Partner Secret Key\n\n", "NOTICE");
+            echo GET_MESSAGE("Use Example:\n", "QUESTION");
+            echo GET_MESSAGE("php generate [--Environment--] [--Partner GUID--] [--Partner Secret Key--]\n\n", "QUESTION");
+            break;
+        case 2:
+            echo GET_MESSAGE("DES ECB Encryption not supported\n", "ERROR");
+            break;
+        case 3:
+            echo GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n", "ERROR");
+            break;
+        default:
+            echo GET_MESSAGE("UNKNOWN ERROR", "ERROR");
+            break;
+    }
+    exit();
+}
+
+function HANDLE_FILEEXISTS(){
+    echo GET_MESSAGE("\nPartner credentials already exists. Do you want to generate again?\n", "QUESTION");
+    echo GET_MESSAGE("[yes/no]");
+    $handle = fopen ("php://stdin","r");
+    $line = fgets($handle);
+    if(trim($line) != 'yes'){
+        echo GET_MESSAGE("\nABORTING!\n", "WARNING");
+        exit;
+    }
+    else {
+        echo GET_MESSAGE("\nGenerating..\n", "SUCCESS");
+    }
+    fclose($handle);
+}
+
+function HANDLE_CONFIRM_ENV(){
+    echo GET_MESSAGE("\nAre you sure to generate PRODUCTION credentials?\n", "QUESTION");
+    echo GET_MESSAGE("[yes/no]");
+    $handle = fopen ("php://stdin","r");
+    $line = fgets($handle);
+    if(trim($line) != 'yes'){
+        echo GET_MESSAGE("\nABORTING!\n", "WARNING");
+        exit;
+    }
+    else {
+        echo GET_MESSAGE("\nConfirmed Production!\n", "SUCCESS");
+    }
+    fclose($handle);
+}
+
+function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
+    switch($_TYPE){
+        case "QUESTION":
+            $_MESSAGE = "\033[1;33m" . $_MESSAGE . "\033[0m";
+            break;
+        case "NOTICE":
+            $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
+            break;
+        case "SUCCESS":
+            $_MESSAGE = "\033[1;32m" . $_MESSAGE . "\033[0m";
+            break;
+        case "SUCCESS_NOTE":
+            $_MESSAGE = "\033[42m" . $_MESSAGE . "\033[0m";
+            break;
+        case "WARNING":
+            $_MESSAGE = "\033[41m" . $_MESSAGE . "\033[0m";
+            break;
+        case "ERROR":
+            $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
+            break;
+        default:
+            $_MESSAGE = "\033[0;39m" . $_MESSAGE . "\033[0m";
+            break;
+    }
+    return $_MESSAGE;
+}
