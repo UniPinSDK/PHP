@@ -45,10 +45,6 @@ if(isset($argv)){
             }
         }
 
-        // show incoming details and ask for domains
-        // how many domains
-        // enter in loop
-
         CHECK_CREDENTIALS();
         $_DOMAINS = DISPLAY_INCOMING_DETAILS($_ENV, $_GUID, $_SKEY);
 
@@ -63,7 +59,7 @@ if(isset($argv)){
         ];
 
         $_PARTNER_DATA["SECRET"] = DES::Encrypt($_PARTNER_DATA["SECRET"], $_PARTNER_DATA["GUID"], "CLI");
-
+print_r($_PARTNER_DATA);
         $_ = file_get_contents("_");
 
         $_PARTNER_DATA = json_encode($_PARTNER_DATA);
@@ -104,8 +100,9 @@ function DISPLAY_INCOMING_DETAILS($_D_ENV, $_D_GUID, $_D_SKEY) {
 }
 
 function QUESTION_DOMAINS(){
+    $_DOMAIN_NAMES = [];
     echo ERROR::CLI_GET_MESSAGE("\nHow many domains will be using this SDK?\n", "QUESTION");
-    echo ERROR::CLI_GET_MESSAGE("[1 - 5]");
+    echo ERROR::CLI_GET_MESSAGE("[1 - 5] >> ");
     $handle = fopen ("php://stdin","r");
     $domains = fgets($handle);
     $domains = trim($domains);
@@ -114,17 +111,17 @@ function QUESTION_DOMAINS(){
             echo ERROR::CLI_GET_MESSAGE("\nEnter domain names without http, https and www", "NOTICE");
             echo ERROR::CLI_GET_MESSAGE("\nexample: domain.com\n\n");
             $_DOMAIN_NAMES = QUESTION_DOMAINS_NAMES($domains);
-            return $_DOMAIN_NAMES;
         }
         else {
             echo ERROR::CLI_GET_MESSAGE("Please enter between 1 to 5", "WARNING");
-            QUESTION_DOMAINS();
+            $_DOMAIN_NAMES = QUESTION_DOMAINS();
         }
     }
     else {
         echo ERROR::CLI_GET_MESSAGE("Please enter number only", "WARNING");
-        QUESTION_DOMAINS();
+        $_DOMAIN_NAMES = QUESTION_DOMAINS();
     }
+    return $_DOMAIN_NAMES;
 }
 
 function QUESTION_DOMAINS_NAMES($domains){
