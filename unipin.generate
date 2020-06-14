@@ -39,7 +39,7 @@ if(isset($argv)){
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
-                ERROR::CLI_HANDLE_FILEEXISTS();
+                ERROR::CLI_HANDLE_FILEEXISTS($_FILE);
             }
         }
 

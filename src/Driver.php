@@ -36,12 +36,12 @@ class Api {
             self::$_MERCHANT = $_MERCHANT;
             
             if(!isset(self::$_MERCHANT->ENV)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->API_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->API_UNIBOX_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->IMAGES_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->GUID)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->SECRET)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-            if(!isset(self::$_MERCHANT->DOMAINS)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->API_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->API_UNIBOX_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->IMAGES_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->GUID)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->SECRET)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+            elseif(!isset(self::$_MERCHANT->DOMAINS)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
 
             self::$_AUTHORIZED = true;
         }

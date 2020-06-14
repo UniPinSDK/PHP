@@ -113,6 +113,13 @@ class ERROR {
                 echo self::CLI_GET_MESSAGE("Use Example:\n", "QUESTION");
                 echo self::CLI_GET_MESSAGE("php methods [--API Module--]\n\n", "QUESTION");
                 break;
+            case 4:
+                echo self::CLI_GET_MESSAGE("Sorry wrong key entered", "ERROR");
+                echo "\n";
+                echo self::CLI_GET_MESSAGE("Program exit!!", "ERROR");
+                echo "\n\n";
+                exit();
+                break;
             default:
                 echo API_ERRORS::Show($_CODE, "CLI");
                 break;
@@ -157,16 +164,25 @@ class ERROR {
         return $_MESSAGE;
     }
 
-    function CLI_HANDLE_FILEEXISTS(){
+    function CLI_HANDLE_FILEEXISTS($_FILE_CONTENT){
         echo self::CLI_GET_MESSAGE("\nPartner credentials already exists. Do you want to generate again?\n", "QUESTION");
-        echo self::CLI_GET_MESSAGE("[yes/no]");
+        echo self::CLI_GET_MESSAGE("[yes/no] ");
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);
-        if(strtolower(trim($line)) != 'yes'){
+        $line = trim($line);
+        if(strtolower($line) != 'yes'){
             echo self::CLI_GET_MESSAGE("ABORTING", "WARNING");
             exit;
         }
         else {
+            echo self::CLI_GET_MESSAGE("Please enter previous secret key: ");
+            $handle = fopen ("php://stdin","password");
+            $_skey = fgets($handle);
+            $_skey = trim($_skey);
+            $_CHECK_KEY = DES::Decrypt($_FILE_CONTENT, $_skey);
+            if(strlen($_CHECK_KEY) < 100){
+                ERROR::CLI_ERROR(4);
+            }
             echo self::CLI_GET_MESSAGE("\nGenerating..\n", "SUCCESS");
         }
         fclose($handle);
@@ -174,7 +190,7 @@ class ERROR {
     
     function CLI_HANDLE_CONFIRM_ENV(){
         echo self::CLI_GET_MESSAGE("\nAre you sure to generate PRODUCTION credentials?\n", "QUESTION");
-        echo self::CLI_GET_MESSAGE("[yes/no]");
+        echo self::CLI_GET_MESSAGE("[yes/no] ");
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);
         if(strtolower(trim($line)) != 'yes'){
