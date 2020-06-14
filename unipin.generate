@@ -37,7 +37,6 @@ if(isset($argv)){
         $_IMAGES_URL = "https://cdn.unipin.com/images/";
 
         $_FILENAME = "./vendor/unipinsdk/php/unipin.merchant";
-        $_FILENAME = "unipin.merchant";
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
@@ -59,7 +58,7 @@ if(isset($argv)){
         ];
 
         $_PARTNER_DATA["SECRET"] = DES::Encrypt($_PARTNER_DATA["SECRET"], $_PARTNER_DATA["GUID"], "CLI");
-print_r($_PARTNER_DATA);
+
         $_ = file_get_contents("_");
 
         $_PARTNER_DATA = json_encode($_PARTNER_DATA);
