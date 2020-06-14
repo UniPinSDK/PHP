@@ -1,7 +1,7 @@
 <?php
 namespace UniPin;
 
-require "./src/_HELPERS";
+require "src/_HELPERS";
 
 // Methods array
 $_API_METHODS = [
