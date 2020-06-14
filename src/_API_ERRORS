@@ -21,7 +21,7 @@ class API_ERRORS {
         9001 => "Please enable 'aes-256-ecb' encryption of PHP",
         9002 => "Invalid secret key",
         9003 => "Merchant credentials file is corrupted",
-        9004 => "",
+        9004 => "Unauthorized domain",
         9005 => "",
         9006 => "",
         9007 => "",

@@ -5,7 +5,7 @@ require "_HELPERS";
 
 class Api {
 
-    private static $_FILE_MERCHANT = "../unipin.merchant";
+    private static $_FILE_MERCHANT = __DIR__ . "/../unipin.merchant";
     private static $_ERROR = false;
 
     private static $_MERCHANT = [];
@@ -26,10 +26,13 @@ class Api {
                 self::$_ERROR = true;
                 API_ERRORS::Show(9002);
             }
+
+            eval($_MERCHANT);
+            $_MERCHANT = $_mer;
         }
 
         if(!self::$_ERROR){
-            self::$_MERCHANT = json_decode($_MERCHANT);
+            self::$_MERCHANT = $_MERCHANT;
             
             if(!isset(self::$_MERCHANT->ENV)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
             if(!isset(self::$_MERCHANT->API_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
@@ -37,8 +40,7 @@ class Api {
             if(!isset(self::$_MERCHANT->IMAGES_URL)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
             if(!isset(self::$_MERCHANT->GUID)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
             if(!isset(self::$_MERCHANT->SECRET)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
-
-            print_r(self::$_MERCHANT);
+            if(!isset(self::$_MERCHANT->DOMAINS)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
         }
     }
 
