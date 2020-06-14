@@ -1,7 +1,7 @@
 <?php
 namespace UniPin;
 
-require "./src/_HELPERS";
+require "src/_HELPERS";
 
 if(isset($argv)){
     if(isset($argv[1]) && isset($argv[2]) && isset($argv[3])){
@@ -35,7 +35,6 @@ if(isset($argv)){
         $_IMAGES_URL = "https://cdn.unipin.com/images/";
 
         $_FILENAME = "./vendor/unipinsdk/php/unipin.merchant";
-        $_FILENAME = "./unipin.merchant";
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
