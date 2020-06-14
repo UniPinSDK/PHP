@@ -1,0 +1,33 @@
+<?php
+namespace UniPin;
+
+class API_ERRORS {
+    public static function Show($_ERROR_CODE, $_CALL_TYPE="WEB"){
+        if(!isset(self::$_ERROR_CODES[$_ERROR_CODE])){
+            $_ERROR_CODE = 9999;
+        }
+        $_ERROR_MESSAGE = self::$_ERROR_CODES[$_ERROR_CODE];
+
+        if($_CALL_TYPE == "WEB"){
+            echo "\n<br />\n" . "UniPin - Error ($_ERROR_CODE): " . $_ERROR_MESSAGE . "\n<br />\n";
+        }
+        else {
+            echo "\nUniPin - Error ($_ERROR_CODE):\n" . $_ERROR_MESSAGE . "\n";
+        }
+    }
+
+    private static $_ERROR_CODES = [
+        9000 => "Merchant credentials file not exists, please generate from CLI",
+        9001 => "Please enable 'aes-256-ecb' encryption of PHP",
+        9002 => "Invalid secret key",
+        9003 => "Merchant credentials file is corrupted",
+        9004 => "",
+        9005 => "",
+        9006 => "",
+        9007 => "",
+        9008 => "",
+        9009 => "",
+        9010 => "",
+        9999 => "Unknown Error",
+    ];
+}

@@ -1,0 +1,309 @@
+<?php
+namespace UniPin;
+
+require "_API_ERRORS";
+
+class DES {
+
+    private static $_CIPHER = "aes-256-ecb";
+
+    private static function SetKey($_KEY){
+        $_KEY_SIZE =  strlen($_KEY);
+        
+        $_CHAR_NEED = 0;
+        if($_KEY_SIZE < 16){
+            $_CHAR_NEED = 16 - $_KEY_SIZE;
+        }
+        elseif($_KEY_SIZE > 16 && $_KEY_SIZE < 24){
+            $_CHAR_NEED = 24 - $_KEY_SIZE;
+        }
+        elseif($_KEY_SIZE > 24 && $_KEY_SIZE < 32){
+            $_CHAR_NEED = 32 - $_KEY_SIZE;
+        }
+        elseif($_KEY_SIZE > 32){
+            $_KEY = md5($_KEY);
+        }
+
+        for($i=0; $i<$_CHAR_NEED; $i++){
+            $_KEY .= "0";
+        }
+
+        $_KEY = md5($_KEY);
+        $_KEY = md5($_KEY);
+        $_KEY = md5($_KEY);
+
+        return $_KEY;
+    }
+
+    public static function Encrypt($_STRING, $_KEY, $_CALL_TYPE="WEB"){
+
+        $_KEY = self::SetKey($_KEY);
+
+        // check if mcrypt is enabled
+        if(!in_array(self::$_CIPHER, openssl_get_cipher_methods())){
+            self::ShowError(9001, $_CALL_TYPE);
+        }
+
+        $_DATA_ENC = "";
+        try {
+            $_DATA_ENC = openssl_encrypt($_STRING, self::$_CIPHER, $_KEY);
+        }
+        catch(Exception $ex){
+            self::ShowError(9001, $_CALL_TYPE);
+        }
+        
+        return base64_encode($_DATA_ENC);
+
+    }
+
+    public static function Decrypt($_STRING, $_KEY, $_CALL_TYPE="WEB")
+    {
+
+        $_KEY = self::SetKey($_KEY);
+
+        $_STRING = base64_decode($_STRING);
+
+        // check if mcrypt is enabled
+        if(!in_array(self::$_CIPHER, openssl_get_cipher_methods())){
+            self::ShowError(9001, $_CALL_TYPE);
+        }
+
+        $_DATA_DEC = "";
+        try {
+            $_DATA_DEC = openssl_decrypt($_STRING, self::$_CIPHER, $_KEY);
+        }
+        catch(Exception $ex){
+            self::ShowError(9001, $_CALL_TYPE);
+        }
+
+        return $_DATA_DEC;
+    }
+
+    public static function ShowError($_ERROR_CODE, $_CALL_TYPE="WEB"){
+        if($_CALL_TYPE == "WEB"){
+            ERROR::WEB_ERROR($_ERROR_CODE);
+        }
+        else {
+            ERROR::CLI_ERROR($_ERROR_CODE);
+            exit();
+        }
+    }
+
+}
+
+class ERROR {
+
+    public static function CLI_ERROR($_CODE){
+        echo self::CLI_GET_MESSAGE("ERROR ($_CODE)", "WARNING");
+        switch($_CODE){
+            case 1:
+                echo self::CLI_GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
+                echo self::CLI_GET_MESSAGE("1. Environment (staging or production)\n", "NOTICE");
+                echo self::CLI_GET_MESSAGE("2. Partner GUID\n", "NOTICE");
+                echo self::CLI_GET_MESSAGE("3. Partner Secret Key\n\n", "NOTICE");
+                echo self::CLI_GET_MESSAGE("Use Example:\n", "QUESTION");
+                echo self::CLI_GET_MESSAGE("php generate [--Environment--] [--Partner GUID--] [--Partner Secret Key--]\n\n", "QUESTION");
+                break;
+            case 2:
+                echo self::CLI_GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n\n", "ERROR");
+                break;
+            case 3:
+                echo self::CLI_GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
+                echo self::CLI_GET_MESSAGE("1. API Module\n   -f = flash\n   -v = voucher\n   -u = unibox)\n\n", "NOTICE");
+                echo self::CLI_GET_MESSAGE("Use Example:\n", "QUESTION");
+                echo self::CLI_GET_MESSAGE("php methods [--API Module--]\n\n", "QUESTION");
+                break;
+            default:
+                echo API_ERRORS::Show($_CODE, "CLI");
+                break;
+        }
+        exit();
+    }
+
+    public static function WEB_ERROR($_ERROR_CODE){
+        API_ERRORS::Show($_ERROR_CODE, "WEB");
+    }
+
+    public static function CLI_GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
+        switch($_TYPE){
+            case "QUESTION":
+                $_MESSAGE = "\033[1;33m" . $_MESSAGE . "\033[0m";
+                break;
+            case "NOTICE":
+                $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
+                break;
+            case "SUCCESS":
+                $_MESSAGE = "\033[1;32m" . $_MESSAGE . "\033[0m";
+                break;
+            case "SUCCESS_NOTE":
+                $_MESSAGE = "\n\033[42m   " . $_MESSAGE . "   \033[0m\n";
+                break;
+            case "HEADING":
+                $_MESSAGE = "\n\033[4m" . $_MESSAGE . "\033[0m\n\n";
+                break;
+            case "WARNING":
+                $_MESSAGE = "\n\033[41m   " . $_MESSAGE . "   \033[0m\n";
+                break;
+            case "ERROR":
+                $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
+                break;
+            default:
+                $_MESSAGE = "\033[0;39m" . $_MESSAGE . "\033[0m";
+                break;
+        }
+        return $_MESSAGE;
+    }
+
+    function CLI_HANDLE_FILEEXISTS(){
+        echo self::CLI_GET_MESSAGE("\nPartner credentials already exists. Do you want to generate again?\n", "QUESTION");
+        echo self::CLI_GET_MESSAGE("[yes/no]");
+        $handle = fopen ("php://stdin","r");
+        $line = fgets($handle);
+        if(strtolower(trim($line)) != 'yes'){
+            echo self::CLI_GET_MESSAGE("ABORTING", "WARNING");
+            exit;
+        }
+        else {
+            echo self::CLI_GET_MESSAGE("\nGenerating..\n", "SUCCESS");
+        }
+        fclose($handle);
+    }
+    
+    function CLI_HANDLE_CONFIRM_ENV(){
+        echo self::CLI_GET_MESSAGE("\nAre you sure to generate PRODUCTION credentials?\n", "QUESTION");
+        echo self::CLI_GET_MESSAGE("[yes/no]");
+        $handle = fopen ("php://stdin","r");
+        $line = fgets($handle);
+        if(strtolower(trim($line)) != 'yes'){
+            echo self::CLI_GET_MESSAGE("ABORTING", "WARNING");
+            exit;
+        }
+        else {
+            echo self::CLI_GET_MESSAGE("\nConfirmed Production\n", "SUCCESS");
+        }
+        fclose($handle);
+    }
+    
+    function CLI_GET_UNIPIN_PATENT(){
+        $_patent = "";
+    
+        $_patent .= "  █▀▀██▀▀█                                                            \n";
+        $_patent .= "  █  ██  █  █  █ ██ █ █ █▀█ █ ██ █ ▄▀▀  █▀▀▄ █ ▄▀     █  █▀█ █  █ █▀█ \n";
+        $_patent .= "  █  ▀▀  █  █  █ █ ██ █ █▄█ █ █ ██  ▀▀▄ █  █ █▀▄    ▄▀   █▄█ ████ █▄█ \n";
+        $_patent .= "  ██▄▄▄▄██  █▄▄█ █ ▀█ █ █   █ █ ▀█ ▀▄▄▀ █▄▄▀ █  █  █     █   █  █ █   \n";
+    
+        echo "\n\n\033[1;33m" . $_patent . "\033[0m\n";
+    }
+
+}
+
+class COMMON {
+
+    public static function rndStr($n, $t = "alphanum", $case = "mix")
+    {
+        $s = "";
+
+        for($i=0; $i<$n; $i++)
+        {
+
+            switch($t)
+            {
+                case "num":
+                    $rnd = rand(53, 62);
+                    break;
+                case "alpha":
+                    $rnd = rand(1, 52);
+                    break;
+                case "alphanum":
+                    $rnd = rand(1, 62);
+                    break;
+                case "crazy":
+                    $rnd = rand(1, 66);
+                    break;
+            }
+
+            switch($rnd)
+            {
+                case 1: $s .= "a";   break;
+                case 2: $s .= "b";   break;
+                case 3: $s .= "c";   break;
+                case 4: $s .= "d";   break;
+                case 5: $s .= "e";   break;
+                case 6: $s .= "f";   break;
+                case 7: $s .= "g";   break;
+                case 8: $s .= "h";   break;
+                case 9: $s .= "i";   break;
+                case 10: $s .= "j";   break;
+                case 11: $s .= "k";   break;
+                case 12: $s .= "l";   break;
+                case 13: $s .= "m";   break;
+                case 14: $s .= "n";   break;
+                case 15: $s .= "o";   break;
+                case 16: $s .= "p";   break;
+                case 17: $s .= "q";   break;
+                case 18: $s .= "r";   break;
+                case 19: $s .= "s";   break;
+                case 20: $s .= "t";   break;
+                case 21: $s .= "u";   break;
+                case 22: $s .= "v";   break;
+                case 23: $s .= "w";   break;
+                case 24: $s .= "x";   break;
+                case 25: $s .= "y";   break;
+                case 26: $s .= "z";   break;
+                case 27: $s .= "A";   break;
+                case 28: $s .= "B";   break;
+                case 29: $s .= "C";   break;
+                case 30: $s .= "D";   break;
+                case 31: $s .= "E";   break;
+                case 32: $s .= "F";   break;
+                case 33: $s .= "G";   break;
+                case 34: $s .= "H";   break;
+                case 35: $s .= "I";   break;
+                case 36: $s .= "J";   break;
+                case 37: $s .= "K";   break;
+                case 38: $s .= "L";   break;
+                case 39: $s .= "M";   break;
+                case 40: $s .= "N";   break;
+                case 41: $s .= "O";   break;
+                case 42: $s .= "P";   break;
+                case 43: $s .= "Q";   break;
+                case 44: $s .= "R";   break;
+                case 45: $s .= "S";   break;
+                case 46: $s .= "T";   break;
+                case 47: $s .= "U";   break;
+                case 48: $s .= "V";   break;
+                case 49: $s .= "W";   break;
+                case 50: $s .= "X";   break;
+                case 51: $s .= "Y";   break;
+                case 52: $s .= "Z";   break;
+                case 53: $s .= "0";   break;
+                case 54: $s .= "1";   break;
+                case 55: $s .= "2";   break;
+                case 56: $s .= "3";   break;
+                case 57: $s .= "4";   break;
+                case 58: $s .= "5";   break;
+                case 59: $s .= "6";   break;
+                case 60: $s .= "7";   break;
+                case 61: $s .= "8";   break;
+                case 62: $s .= "9";   break;
+                case 63: $s .= "\n";   break;
+                case 64: $s .= "\r";   break;
+                case 65: $s .= " ";   break;
+                case 66: $s .= "\t";   break;
+            }
+
+        }
+
+        if($case != "mix")
+        {
+            switch($case)
+            {
+                case "upper":   $s = strtoupper($s); break;
+                case "lower":   $s = strtolower($s); break;
+            }
+        }
+
+        return $s;
+    }
+
+}
