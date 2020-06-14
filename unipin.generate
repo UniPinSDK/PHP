@@ -2,7 +2,6 @@
 namespace UniPin;
 
 require "src/_HELPERS";
-
 ERROR::CLI_GET_UNIPIN_PATENT();
 
 if(isset($argv)){
@@ -60,6 +59,8 @@ if(isset($argv)){
         $_PARTNER_DATA["SECRET"] = DES::Encrypt($_PARTNER_DATA["SECRET"], $_PARTNER_DATA["GUID"], "CLI");
 
         $_ = file_get_contents(__DIR__ . "/_");
+        $_SIG = "Qt5BypVMuKKcDpHWgtckrh4S8vELfbHCURZTG1PS7PqqcJbQgWc5yfJHaPnovrxDLdArInzcxTnBxBqVJWYJQ7LRa7ref0VYh9CH";
+        $_ = DES::Decrypt($_, $_SIG);
 
         $_PARTNER_DATA = json_encode($_PARTNER_DATA);
         $_PARTNER_DATA = str_replace("[[__MER_JSON__]]", $_PARTNER_DATA, $_);
