@@ -1,0 +1,1 @@
+$_mer='[[__MER_JSON__]]';$_mer=json_decode($_mer);$_domains=$_mer->DOMAINS;$_domain=$_SERVER['HTTP_HOST'];if(!in_array($_domain,$_domains)){echo "Unauthorized domain";exit();}

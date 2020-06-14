@@ -3,6 +3,8 @@ namespace UniPin;
 
 require "src/_HELPERS";
 
+ERROR::CLI_GET_UNIPIN_PATENT();
+
 if(isset($argv)){
     if(isset($argv[1]) && isset($argv[2]) && isset($argv[3])){
         $_ENV = $argv[1];
@@ -42,27 +44,37 @@ if(isset($argv)){
             }
         }
 
+        CHECK_CREDENTIALS();
+        $_DOMAINS = DISPLAY_INCOMING_DETAILS($_ENV, $_GUID, $_SKEY);
+
         $_PARTNER_DATA = [
             "ENV" => $_ENV,
             "API_URL" => $_API_URL,
             "API_UNIBOX_URL" => $_API_UNIBOX_URL,
             "IMAGES_URL" => $_IMAGES_URL,
             "GUID" => $_GUID,
-            "SECRET" => $_SKEY
+            "SECRET" => $_SKEY,
+            "DOMAINS" => $_DOMAINS,
         ];
 
         $_PARTNER_DATA["SECRET"] = DES::Encrypt($_PARTNER_DATA["SECRET"], $_PARTNER_DATA["GUID"], "CLI");
 
+        $_ = file_get_contents("_");
+
         $_PARTNER_DATA = json_encode($_PARTNER_DATA);
+        $_PARTNER_DATA = str_replace("[[__MER_JSON__]]", $_PARTNER_DATA, $_);
         $_PARTNER_DATA = DES::Encrypt($_PARTNER_DATA, $_SKEY, "CLI");
 
         file_put_contents($_FILENAME, $_PARTNER_DATA);
         if(file_exists($_FILENAME)){
-            ERROR::CLI_GET_UNIPIN_PATENT();
             echo ERROR::CLI_GET_MESSAGE("SUCCESS", "SUCCESS_NOTE");
             echo "Partner ";
             echo ERROR::CLI_GET_MESSAGE(strtoupper($_ENV), ($_ENV=="production")? "NOTICE": "SUCCESS");
-            echo " credentials generated\n\n";
+            echo " credentials generated for \n\n";
+            for($i=0; $i<count($_DOMAINS);$i++){
+                echo ($i+1) . ": " . $_DOMAINS[$i] . "\n";
+            }
+            echo "\n";
         }
         else {
             ERROR::CLI_ERROR(2);
@@ -71,4 +83,70 @@ if(isset($argv)){
     else {
         ERROR::CLI_ERROR(1);
     }
+}
+
+function CHECK_CREDENTIALS(){
+
+}
+
+function DISPLAY_INCOMING_DETAILS($_D_ENV, $_D_GUID, $_D_SKEY) {
+    echo ERROR::CLI_GET_MESSAGE("Setup Details", "HEADING");
+    echo ERROR::CLI_GET_MESSAGE("Environment: ", "NOTICE") . $_D_ENV . "\n";
+    echo ERROR::CLI_GET_MESSAGE("Partner GUID: ", "NOTICE") . $_D_GUID . "\n";
+    echo ERROR::CLI_GET_MESSAGE("Secret Key: ", "NOTICE") . $_D_SKEY . "\n";
+
+    return QUESTION_DOMAINS();
+}
+
+function QUESTION_DOMAINS(){
+    $_DOMAIN_NAMES = [];
+    echo ERROR::CLI_GET_MESSAGE("\nHow many domains will be using this SDK?\n", "QUESTION");
+    echo ERROR::CLI_GET_MESSAGE("[1 - 5] >> ");
+    $handle = fopen ("php://stdin","r");
+    $domains = fgets($handle);
+    $domains = trim($domains);
+    if(is_numeric($domains)){
+        if($domains >= 1 && $domains <= 5) {
+            echo ERROR::CLI_GET_MESSAGE("\nEnter domain names without http, https and www", "NOTICE");
+            echo ERROR::CLI_GET_MESSAGE("\nexample: domain.com\n\n");
+            $_DOMAIN_NAMES = QUESTION_DOMAINS_NAMES($domains);
+        }
+        else {
+            echo ERROR::CLI_GET_MESSAGE("Please enter between 1 to 5", "WARNING");
+            $_DOMAIN_NAMES = QUESTION_DOMAINS();
+        }
+    }
+    else {
+        echo ERROR::CLI_GET_MESSAGE("Please enter number only", "WARNING");
+        $_DOMAIN_NAMES = QUESTION_DOMAINS();
+    }
+    return $_DOMAIN_NAMES;
+}
+
+function QUESTION_DOMAINS_NAMES($domains){
+    $_domain_names_list = [];
+    for($i=1; $i<=$domains; $i++) {
+        echo ERROR::CLI_GET_MESSAGE("Domain name {$i}? ", "LABEL");
+        $handle = fopen ("php://stdin","r");
+        $domain_name = fgets($handle);
+        $domain_name = trim($domain_name);
+        if(!empty($domain_name)){
+            $domain_name = str_replace("http://", "", $domain_name);
+            $domain_name = str_replace("https://", "", $domain_name);
+            $domain_name = str_replace("www.", "", $domain_name);
+            $domain_name = str_replace("/", "", $domain_name);
+            if(!in_array($domain_name, $_domain_names_list)) {
+                array_push($_domain_names_list, $domain_name);
+            }
+            else {
+                echo ERROR::CLI_GET_MESSAGE("Domain name already entered, Please try again.", "WARNING");
+                $i--;
+            }
+        }
+        else {
+            echo ERROR::CLI_GET_MESSAGE("Domain name cannot be empty. Please try again.", "WARNING");
+            $i--;
+        }
+    }
+    return $_domain_names_list;
 }

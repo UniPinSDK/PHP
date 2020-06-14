@@ -144,6 +144,9 @@ class ERROR {
             case "WARNING":
                 $_MESSAGE = "\n\033[41m   " . $_MESSAGE . "   \033[0m\n";
                 break;
+            case "LABEL":
+                $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
+                break;
             case "ERROR":
                 $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
                 break;
