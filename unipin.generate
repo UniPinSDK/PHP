@@ -1,27 +1,34 @@
 <?php
+namespace UniPin;
+
+require "./src/_HELPERS";
+
 if(isset($argv)){
     if(isset($argv[1]) && isset($argv[2]) && isset($argv[3])){
+        $_ENV = $argv[1];
+        $_GUID = $argv[2];
+        $_SKEY = $argv[3];
 
-        $argv[1] = strtolower($argv[1]);
-        if($argv[1] == "" || $argv[2] == "" || $argv[3] == ""){
-            ERROR(1);
+        $_ENV = strtolower($_ENV);
+        if($_ENV == "" || $_GUID == "" || $_SKEY == ""){
+            ERROR::CLI_ERROR(1);
         }
 
-        if($argv[1] != "staging" && $argv[1] != "production"){
-            ERROR(1);
+        if($_ENV != "staging" && $_ENV != "production"){
+            ERROR::CLI_ERROR(1);
         }
-        elseif($argv[1] == "production"){
-            HANDLE_CONFIRM_ENV();
+        elseif($_ENV == "production"){
+            ERROR::CLI_HANDLE_CONFIRM_ENV();
         }
 
         $_API_PREFIX = "dev-api";
-        if($argv[1] == "production"){
+        if($_ENV == "production"){
             $_API_PREFIX = "api";
         }
         $_API_URL = "https://" . $_API_PREFIX . ".unipin.com/";
 
         $_API_UNIBOX_URL = "https://dev.unipin.com/api/unibox/";
-        if($argv[1] == "production"){
+        if($_ENV == "production"){
             $_API_UNIBOX_URL = "https://services.unipin.com/api/";
         }
 
@@ -32,134 +39,37 @@ if(isset($argv)){
         if(file_exists($_FILENAME)){
             $_FILE = file_get_contents($_FILENAME);
             if(trim($_FILE) != ""){
-                HANDLE_FILEEXISTS();
+                ERROR::CLI_HANDLE_FILEEXISTS();
             }
         }
 
         $_PARTNER_DATA = [
-            "ENV" => $argv[1],
+            "ENV" => $_ENV,
             "API_URL" => $_API_URL,
             "API_UNIBOX_URL" => $_API_UNIBOX_URL,
             "IMAGES_URL" => $_IMAGES_URL,
-            "GUID" => $argv[2],
-            "SECRET" => $argv[3]
+            "GUID" => $_GUID,
+            "SECRET" => $_SKEY
         ];
-        $_PARTNER_DATA = json_encode($_PARTNER_DATA);
 
-        $_CIPHER = "des-ecb";
-        if (in_array($_CIPHER, openssl_get_cipher_methods()))
-        {
-            $_PARTNER_DATA = openssl_encrypt($_PARTNER_DATA, $_CIPHER, $argv[3]);
-        }
-        else {
-            ERROR(2);
-        }
+        $_PARTNER_DATA["SECRET"] = DES::Encrypt($_PARTNER_DATA["SECRET"], $_PARTNER_DATA["GUID"], "CLI");
+
+        $_PARTNER_DATA = json_encode($_PARTNER_DATA);
+        $_PARTNER_DATA = DES::Encrypt($_PARTNER_DATA, $_SKEY, "CLI");
 
         file_put_contents($_FILENAME, $_PARTNER_DATA);
         if(file_exists($_FILENAME)){
-            GET_UNIPIN_PATENT();
-            echo GET_MESSAGE("SUCCESS", "SUCCESS_NOTE");
+            ERROR::CLI_GET_UNIPIN_PATENT();
+            echo ERROR::CLI_GET_MESSAGE("SUCCESS", "SUCCESS_NOTE");
             echo "Partner ";
-            echo GET_MESSAGE(strtoupper($argv[1]), ($argv[1]=="production")? "NOTICE": "SUCCESS");
+            echo ERROR::CLI_GET_MESSAGE(strtoupper($_ENV), ($_ENV=="production")? "NOTICE": "SUCCESS");
             echo " credentials generated\n\n";
         }
         else {
-            ERROR(3);
+            ERROR::CLI_ERROR(2);
         }
     }
     else {
-        ERROR(1);
+        ERROR::CLI_ERROR(1);
     }
-}
-
-function ERROR($_CODE){
-    echo GET_MESSAGE("ERROR ($_CODE)", "WARNING");
-    switch($_CODE){
-        case 1:
-            echo GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
-            echo GET_MESSAGE("1. Environment (staging or production)\n", "NOTICE");
-            echo GET_MESSAGE("2. Partner GUID\n", "NOTICE");
-            echo GET_MESSAGE("3. Partner Secret Key\n\n", "NOTICE");
-            echo GET_MESSAGE("Use Example:\n", "QUESTION");
-            echo GET_MESSAGE("php generate [--Environment--] [--Partner GUID--] [--Partner Secret Key--]\n\n", "QUESTION");
-            break;
-        case 2:
-            echo GET_MESSAGE("DES ECB Encryption not supported\n", "ERROR");
-            break;
-        case 3:
-            echo GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n\n", "ERROR");
-            break;
-        default:
-            echo GET_MESSAGE("UNKNOWN ERROR", "ERROR");
-            break;
-    }
-    exit();
-}
-
-function HANDLE_FILEEXISTS(){
-    echo GET_MESSAGE("\nPartner credentials already exists. Do you want to generate again?\n", "QUESTION");
-    echo GET_MESSAGE("[yes/no]");
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    if(trim($line) != 'yes'){
-        echo GET_MESSAGE("ABORTING", "WARNING");
-        exit;
-    }
-    else {
-        echo GET_MESSAGE("\nGenerating..\n", "SUCCESS");
-    }
-    fclose($handle);
-}
-
-function HANDLE_CONFIRM_ENV(){
-    echo GET_MESSAGE("\nAre you sure to generate PRODUCTION credentials?\n", "QUESTION");
-    echo GET_MESSAGE("[yes/no]");
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    if(trim($line) != 'yes'){
-        echo GET_MESSAGE("ABORTING", "WARNING");
-        exit;
-    }
-    else {
-        echo GET_MESSAGE("\nConfirmed Production\n", "SUCCESS");
-    }
-    fclose($handle);
-}
-
-function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
-    switch($_TYPE){
-        case "QUESTION":
-            $_MESSAGE = "\033[1;33m" . $_MESSAGE . "\033[0m";
-            break;
-        case "NOTICE":
-            $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
-            break;
-        case "SUCCESS":
-            $_MESSAGE = "\033[1;32m" . $_MESSAGE . "\033[0m";
-            break;
-        case "SUCCESS_NOTE":
-            $_MESSAGE = "\n\033[42m   " . $_MESSAGE . "   \033[0m\n";
-            break;
-        case "WARNING":
-            $_MESSAGE = "\n\033[41m   " . $_MESSAGE . "   \033[0m\n";
-            break;
-        case "ERROR":
-            $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
-            break;
-        default:
-            $_MESSAGE = "\033[0;39m" . $_MESSAGE . "\033[0m";
-            break;
-    }
-    return $_MESSAGE;
-}
-
-function GET_UNIPIN_PATENT(){
-    $_patent = "";
-
-    $_patent .= "  █▀▀██▀▀█                                                            \n";
-    $_patent .= "  █  ██  █  █  █ ██ █ █ █▀█ █ ██ █ ▄▀▀  █▀▀▄ █ ▄▀     █  █▀█ █  █ █▀█ \n";
-    $_patent .= "  █  ▀▀  █  █  █ █ ██ █ █▄█ █ █ ██  ▀▀▄ █  █ █▀▄    ▄▀   █▄█ ████ █▄█ \n";
-    $_patent .= "  ██▄▄▄▄██  █▄▄█ █ ▀█ █ █   █ █ ▀█ ▀▄▄▀ █▄▄▀ █  █  █     █   █  █ █   \n";
-
-    echo "\n\n\033[1;33m" . $_patent . "\033[0m\n";
 }

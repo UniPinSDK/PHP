@@ -1,4 +1,7 @@
 <?php
+namespace UniPin;
+
+require "./src/_HELPERS";
 
 // Methods array
 $_API_METHODS = [
@@ -76,13 +79,13 @@ if(isset($argv)){
 
         $argv[1] = strtolower($argv[1]);
         if($argv[1] == ""){
-            ERROR(1);
+            ERROR::CLI_ERROR(3);
         }
         elseif($argv[1] != "-f" && $argv[1] != "-v" && $argv[1] != "-u"){
-            ERROR(1);
+            ERROR::CLI_ERROR(3);
         }
 
-        $_EXAMPLE_TEXT = GET_MESSAGE("Allowed Methods:", "HEADING");
+        $_EXAMPLE_TEXT = ERROR::CLI_GET_MESSAGE("Allowed Methods:", "HEADING");
 
         $_VAR_1 = strtolower($argv[1]);
         $_VAR_2 = strtolower($argv[2]);
@@ -106,74 +109,20 @@ if(isset($argv)){
 
     }
     else {
-        ERROR(1);
+        ERROR::CLI_ERROR(3);
     }
-}
-
-function ERROR($_CODE){
-    echo GET_MESSAGE("ERROR ($_CODE)", "WARNING");
-    switch($_CODE){
-        case 1:
-            echo GET_MESSAGE("Parameters wrong or missing:\n\n", "ERROR");
-            echo GET_MESSAGE("1. API Module\n   -f = flash\n   -v = voucher\n   -u = unibox)\n\n", "NOTICE");
-            echo GET_MESSAGE("Use Example:\n", "QUESTION");
-            echo GET_MESSAGE("php methods [--API Module--]\n\n", "QUESTION");
-            break;
-        case 2:
-            echo GET_MESSAGE("DES ECB Encryption not supported\n", "ERROR");
-            break;
-        case 3:
-            echo GET_MESSAGE("Credentials file unable to create. Please contact support\nhttps://unipin.com/support\n", "ERROR");
-            break;
-        default:
-            echo GET_MESSAGE("UNKNOWN ERROR", "ERROR");
-            break;
-    }
-    exit();
-}
-
-function GET_MESSAGE($_MESSAGE = "", $_TYPE = "NORMAL"){
-    switch($_TYPE){
-        case "QUESTION":
-            $_MESSAGE = "\033[1;33m" . $_MESSAGE . "\033[0m";
-            break;
-        case "NOTICE":
-            $_MESSAGE = "\033[1;36m" . $_MESSAGE . "\033[0m";
-            break;
-        case "SUCCESS":
-            $_MESSAGE = "\033[1;32m" . $_MESSAGE . "\033[0m";
-            break;
-        case "HEADING":
-            $_MESSAGE = "\n\033[4m" . $_MESSAGE . "\033[0m\n\n";
-            break;
-        case "WARNING":
-            $_MESSAGE = "\n\033[41m   " . $_MESSAGE . "   \033[0m\n";
-            break;
-        case "ERROR":
-            $_MESSAGE = "\033[1;31m\033[5m" . $_MESSAGE . "\033[0m";
-            break;
-        default:
-            $_MESSAGE = "\033[0;39m" . $_MESSAGE . "\033[0m";
-            break;
-    }
-    return $_MESSAGE;
 }
 
 function GET_SAMPLES($_API_NAME){
-
     global $_API_METHODS;
     $_TEXT = "";
-
-    $_TEXT .= GET_MESSAGE($_API_METHODS[$_API_NAME]["heading"] . ":\n", "QUESTION");
-
+    $_TEXT .= ERROR::CLI_GET_MESSAGE($_API_METHODS[$_API_NAME]["heading"] . ":\n", "QUESTION");
     $_METHODS = $_API_METHODS[$_API_NAME]["methods"];
     foreach($_METHODS as $_M){
-        $_TEXT .= GET_MESSAGE("\n   " . $_M["method"] . "\n", "SUCCESS");
-        $_TEXT .= GET_MESSAGE("      " . $_M["description"] . ".\n", "NORMAL");
+        $_TEXT .= ERROR::CLI_GET_MESSAGE("\n   " . $_M["method"] . "\n", "SUCCESS");
+        $_TEXT .= ERROR::CLI_GET_MESSAGE("      " . $_M["description"] . ".\n", "NORMAL");
         $_TEXT .= "\n";
     }
-
     $_TEXT .= "\n";
-
     return $_TEXT;
 }
