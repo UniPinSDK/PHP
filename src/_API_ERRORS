@@ -22,7 +22,7 @@ class API_ERRORS {
         9002 => "Invalid secret key",
         9003 => "Merchant credentials file is corrupted",
         9004 => "Unauthorized domain",
-        9005 => "",
+        9005 => "Unauthorized API access",
         9006 => "",
         9007 => "",
         9008 => "",

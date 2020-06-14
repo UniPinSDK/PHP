@@ -9,6 +9,7 @@ class Api {
     private static $_ERROR = false;
 
     private static $_MERCHANT = [];
+    private static $_AUTHORIZED = false;
 
     public static function Auth($_SECRETKEY){
         if(!file_exists(self::$_FILE_MERCHANT)){
@@ -41,6 +42,8 @@ class Api {
             if(!isset(self::$_MERCHANT->GUID)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
             if(!isset(self::$_MERCHANT->SECRET)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
             if(!isset(self::$_MERCHANT->DOMAINS)){ self::$_ERROR = true; API_ERRORS::Show(9003);}
+
+            self::$_AUTHORIZED = true;
         }
     }
 
@@ -61,6 +64,10 @@ class Api {
         return $_VALUE;
     }
 
+    public function IS_AUTH(){
+        return self::$_AUTHORIZED;
+    }
+
 }
 
 class Games{
@@ -73,6 +80,10 @@ class Games{
     private static $_API_PATH_ORDER_INQUIRY = "in-game-topup/order/inquiry";
    
     public static function GetList(){
+        if(!Api::IS_AUTH()){
+            API_ERRORS::Show(9005);
+        }
+
         $path = self::$_API_PATH_GAMELIST;
         $URL = Api::GET_MER_PROP("API_URL") . $path;
         $params = [];
